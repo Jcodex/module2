@@ -8,21 +8,26 @@
     lineinfile:
       path: /etc/hosts
       line: 192.168.3.2 server1
-  - openssh_keypair:
-      path: /home/vagrant/.ssh/id_rsa
 
-  - name: Change ssh ownership
-    file:
-      path: /home/vagrant/.ssh/id_rsa
-      owner: vagrant
- 
-  - name: Change ssh ownership
-    file:
-      path: /home/vagrant/.ssh/id_rsa.pub 
-      owner: vagrant
+  - name: get pub key
+    slurp:
+      src: /vagrant/id_rsa.pub
+    register: key
 
-  - name: Copy ssh key
+  - name: update auth keys
+    blockinfile:
+      block: "{{ key['content'] | b64decode }}"
+      dest: /home/vagrant/.ssh/authorized_keys
+      remote_src: yes
+
+  - name: copy ssh pub key
     copy:
-      src: /home/vagrant/.ssh/id_rsa.pub
-      dest: /vagrant
+      src: /vagrant/id_rsa.pub
+      dest: /home/vagrant/.ssh/id_rsa.pub
+      remote_src: yes 
+
+  - name: copy ssh private key
+    copy:
+      src: /vagrant/id_rsa
+      dest: /home/vagrant/.ssh/id_rsa
       remote_src: yes
