@@ -1,0 +1,41 @@
+---
+- hosts: all
+  become: yes 
+  become_method: sudo
+ 
+  tasks:
+  - name: Install git
+    apt:
+      name: git
+      state: latest
+      update_cache: yes
+
+  - git:
+      repo: https://github.com/Jcodex/module2.git
+      dest: /home/mygit
+      version: task2
+
+  - name: register content of test.txt
+    slurp:
+      src: /home/mygit/test.txt
+    register: file
+
+  - debug:
+      msg: test.txt content is {{ file['content'] | b64decode }}
+
+  - name: Add vm 2 name
+    lineinfile:
+      path: /etc/hosts
+      line: 192.168.3.3 server2
+ 
+#  - name: add ssh
+#    copy:
+#      src: /vagrant/.ssh/id_rsa.pub
+#      dest: /home/vagrant/.ssh/authorized_keys
+#      remote_src: yes
+
+  - name: update auth keys
+    blockinfile:
+      block: "{{ lookup('file', '/home/jcod/Desktop/module2/id_rsa.pub') }}"
+      dest: /home/vagrant/.ssh/authorized_keys
+      remote_src: yes

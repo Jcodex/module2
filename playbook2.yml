@@ -1,0 +1,28 @@
+---
+- hosts: all
+  become: yes
+  become_method: sudo
+
+  tasks:
+  - name: Add vm 1 name
+    lineinfile:
+      path: /etc/hosts
+      line: 192.168.3.2 server1
+  - openssh_keypair:
+      path: /home/vagrant/.ssh/id_rsa
+
+  - name: Change ssh ownership
+    file:
+      path: /home/vagrant/.ssh/id_rsa
+      owner: vagrant
+ 
+  - name: Change ssh ownership
+    file:
+      path: /home/vagrant/.ssh/id_rsa.pub 
+      owner: vagrant
+
+  - name: Copy ssh key
+    copy:
+      src: /home/vagrant/.ssh/id_rsa.pub
+      dest: /vagrant
+      remote_src: yes
